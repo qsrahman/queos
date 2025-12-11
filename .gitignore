@@ -1,0 +1,10 @@
+.DS_Store
+*.iso
+*.o
+*.map
+*.img
+*.elf
+*.sym
+*.bin
+build/
+grabbag/

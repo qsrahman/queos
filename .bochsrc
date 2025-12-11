@@ -1,0 +1,21 @@
+megs: 512
+romimage: file=$BXSHARE/BIOS-bochs-latest
+vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
+cpu: count=1, ips=1000000
+#clock: sync=realtime, time0=local
+keyboard: keymap=$BXSHARE/keymaps/sdl2-pc-us.map
+mouse: enabled=0
+display_library: sdl2
+#log: bochsout.txt
+
+ata0: enabled=1, ioaddr1=0x01f0, ioaddr2=0x03f0, irq=14
+#ata1: enabled=1, ioaddr1=0x170, ioaddr2=0x370, irq=15
+ata0-master: type=disk, mode=flat, path="build/queos.img", cylinders=100, heads=10, spt=10
+#ata0-slave: type=disk, mode=flat, path="build/distrib.img", cylinders=1024, heads=1, spt=1
+boot: disk
+
+#floppya: 1_44=build/floppy.img, status=inserted
+#boot: floppy
+
+#ata0-master: type=CD-ROM, path=build/qos.iso, status=inserted
+#boot: cdrom
