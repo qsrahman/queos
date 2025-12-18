@@ -3,15 +3,17 @@ VERSION = 0.0.1
 
 PREFIX = i686-elf-
 
+export ASM = nasm
 export CC = $(PREFIX)gcc
 export LD = $(PREFIX)gcc
-export ASM = nasm
 export OBJDUMP = $(PREFIX)objdump
 export OBJCOPY = $(PREFIX)objcopy
+
 export CFLAGS = -std=c11 -Wall -Wextra -DVERSION=\"$(VERSION)\"
 export LDFLAGS =
 export ASMFLAGS =
 export LIBS =
+
 export BUILD_DIR = $(abspath build)
 
 QEMU = qemu-system-i386
@@ -68,4 +70,3 @@ clean:
 	@$(MAKE) -C kernel/ BUILD_DIR=$(abspath $(BUILD_DIR)) clean
 	@rm -rf $(BUILD_DIR)/*
 	@rm -rf iso/boot/*.elf
-

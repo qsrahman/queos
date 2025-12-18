@@ -1,5 +1,5 @@
-CFLAGS += -O -m32 -ffreestanding -nostdlib -fno-builtin -fno-stack-protector -I../include
-LDFLAGS += -nostdlib -Wl,-melf_i386 -Wl,--no-warn-rwx-segments -Wl,--no-dynamic-linker
+CFLAGS += -O -ffreestanding -nostdlib -I../include
+LDFLAGS += -nostdlib
 ASMFLAGS += -felf32
 
 .PHONY: all clean

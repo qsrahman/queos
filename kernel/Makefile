@@ -1,7 +1,7 @@
-ASMFLAGS += -felf32 -g
-CFLAGS += -O0 -g3 -m32 -ffreestanding -nostdlib -fno-builtin -fno-stack-protector -I../include
+ASMFLAGS += -f elf32 -g
+CFLAGS += -O0 -g3 -ffreestanding -nostdlib -I../include
+LDFLAGS += -T kernel.ld -nostdlib -Wl
 LIBS += -lgcc
-LDFLAGS += -T kernel.ld -nostdlib -Wl,-melf_i386 -Wl
 
 SOURCES_C=$(wildcard *.c)
 SOURCES_ASM=$(wildcard *.asm)

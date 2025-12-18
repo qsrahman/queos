@@ -18,6 +18,6 @@ char* strchr(char* s, int c);
 char* strrchr(char* s, int c);
 
 int memcmp(const void* s1, const void* s2, size_t n);
-void* memset(void* dest, char val, size_t n);
+void* memset(void* dest, int val, size_t n);
 void* memcpy(void* dst, const void* src, size_t n);
 void* memmove(void* dst, const void* src, size_t n);
