@@ -8,8 +8,8 @@
 /*
  * Wirzenius wrote this portably, Torvalds fucked it up :-)
  */
-#include <stdarg.h>
 #include <console.h>
+#include <stdarg.h>
 #include <string.h>
 
 /* we use this so that we can do without the ctype library */

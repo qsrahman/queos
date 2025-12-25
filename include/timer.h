@@ -1,5 +1,5 @@
 #pragma once
 
-#include <types.h>
+#include <stdint.h>
 
-void init_timer(uint frequency);
+void init_timer(uint32_t frequency);

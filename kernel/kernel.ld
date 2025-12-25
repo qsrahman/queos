@@ -26,7 +26,7 @@ SECTIONS {
         *(COMMON)           /* all COMMON sections from all files */
         *(.bss*)            /* all bss sections from all files */
     }
-    
+
     . = ALIGN(0x1000);
     _end = .;
 }

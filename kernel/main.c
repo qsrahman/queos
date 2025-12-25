@@ -1,11 +1,11 @@
+#include <console.h>
 #include <gdt.h>
 #include <idt.h>
 #include <kbd.h>
-#include <uart.h>
 #include <monitor.h>
-#include <console.h>
-#include <timer.h>
 #include <stddef.h>
+#include <timer.h>
+#include <uart.h>
 #include <x86.h>
 
 void kmain(void) {

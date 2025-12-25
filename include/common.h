@@ -1,6 +1,6 @@
 #pragma once
 
-#include <types.h>
+#include <stdint.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -8,14 +8,14 @@
 // Round down to the nearest multiple of n
 #define ROUNDDOWN(a, n)                   \
     ({                                    \
-        uint __a = (uint)(a);             \
+        uint32_t __a = (uint32_t)(a);     \
         (__typeof__(a))(__a - __a % (n)); \
     })
 // Round up to the nearest multiple of n
-#define ROUNDUP(a, n)                                         \
-    ({                                                        \
-        uint __n = (uint)(n);                                 \
-        (__typeof__(a))(ROUNDDOWN((uint)(a) + __n - 1, __n)); \
+#define ROUNDUP(a, n)                                             \
+    ({                                                            \
+        uint32_t __n = (uint32_t)(n);                             \
+        (__typeof__(a))(ROUNDDOWN((uint32_t)(a) + __n - 1, __n)); \
     })
 
 #define PANIC(msg) panic(msg, __FILE__, __LINE__);

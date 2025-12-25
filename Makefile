@@ -50,17 +50,17 @@ qemu: all
 
 qemu-nox: all
 	@echo Ctrl+a h for help
-	@$(QEMU) -nographic -cdrom $(BUILD_DIR)/queos.img -m 32
+	@$(QEMU) -nographic -hda $(BUILD_DIR)/queos.img -m 32
 
 qemu-gdb: all
 	@echo "Now run 'gdb' from another terminal." 1>&2
 	@echo Ctrl+a h for help
-	@$(QEMU) -serial mon:stdio -cdrom $(BUILD_DIR)/queos.img -m 32 -S -gdb tcp::25501
+	@$(QEMU) -serial mon:stdio -hda $(BUILD_DIR)/queos.img -m 32 -S -gdb tcp::25501
 
 qemu-nox-gdb: all
 	@echo "Now run 'gdb' from another terminal." 1>&2
 	@echo Ctrl+a h for help
-	@$(QEMU) -nographic -cdrom $(BUILD_DIR)/queos.img -m 32 -S -gdb tcp::25501
+	@$(QEMU) -nographic -hda $(BUILD_DIR)/queos.img -m 32 -S -gdb tcp::25501
 
 always:
 	@mkdir -p $(BUILD_DIR)

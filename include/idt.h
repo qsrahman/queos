@@ -1,6 +1,6 @@
 #pragma once
 
-#include <types.h>
+#include <stdint.h>
 
 // Intrrupts 0-31 are reserved by intel for use as exceptions
 #define IRQ0 32   // Timer
@@ -24,34 +24,34 @@
 
 // A struct describing an interrupt gate.
 typedef struct idt_entry {
-    ushort base_lo;  // The lower 16 bits of the address to jump to when this
-                     // interrupt fires.
-    ushort sel;      // Kernel segment selector.
-    uchar always0;   // This must always be zero.
-    uchar flags;     // More flags. See documentation.
-    ushort base_hi;  // The upper 16 bits of the address to jump to.
+    uint16_t base_lo;  // The lower 16 bits of the address to jump to when this
+                       // interrupt fires.
+    uint16_t sel;      // Kernel segment selector.
+    uint8_t always0;   // This must always be zero.
+    uint8_t flags;     // More flags. See documentation.
+    uint16_t base_hi;  // The upper 16 bits of the address to jump to.
 } __attribute__((packed)) idt_entry_t;
 
 // A struct describing a pointer to an array of interrupt handlers.
 // This is in a format suitable for giving to 'lidt'.
 typedef struct idt_ptr {
-    uint base;  // The address of the first element in our idt_entry_t array.
-    ushort limit;
+    uint32_t base;  // The address of the first element in our idt_entry_t array.
+    uint16_t limit;
 } __attribute__((packed)) idt_ptr_t;
 
 typedef struct registers {
-    uint ds;                                      // Data segment selector
-    uint edi, esi, ebp, esp, ebx, edx, ecx, eax;  // Pushed by pusha.
-    uint int_no, err_code;                        // Interrupt number and error code (if applicable)
-    uint eip, cs, eflags, useresp, ss;            // Pushed by the processor automatically.
+    uint32_t ds;                                      // Data segment selector
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;  // Pushed by pusha.
+    uint32_t int_no, err_code;                        // Interrupt number and error code (if applicable)
+    uint32_t eip, cs, eflags, useresp, ss;            // Pushed by the processor automatically.
 } __attribute__((packed)) registers_t;
 
 static inline void lidt(idt_entry_t* p, int size) {
-    volatile ushort idt_desc[3];
+    volatile uint16_t idt_desc[3];
 
     idt_desc[0] = size - 1;
-    idt_desc[1] = (uint)p;
-    idt_desc[2] = (uint)p >> 16;
+    idt_desc[1] = (uint32_t)p;
+    idt_desc[2] = (uint32_t)p >> 16;
 
     __asm__ __volatile__("lidt (%0)"
                          :
@@ -59,14 +59,14 @@ static inline void lidt(idt_entry_t* p, int size) {
 }
 
 void init_idt(void);
-void set_idt_gate(uchar num, uint base, ushort sel, uchar flags);
+void set_idt_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags);
 
 // Enables registration of callbacks for interrupts or IRQs.
 // For IRQs, to ease confusion, use the #defines above as the
 // first parameter.
 typedef void (*isr_t)(registers_t*);
-void register_interrupt_handler(uchar n, isr_t handler);
-void unregister_interrupt_handler(uchar n);
+void register_interrupt_handler(uint8_t n, isr_t handler);
+void unregister_interrupt_handler(uint8_t n);
 
 // These directives let us access the addresses of our ASM ISR handlers.
 void isr0(void);

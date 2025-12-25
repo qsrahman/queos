@@ -1,8 +1,8 @@
+#include <console.h>
 #include <gdt.h>
 #include <idt.h>
 #include <picirq.h>
 #include <string.h>
-#include <console.h>
 
 static const char* exception_msg[] = {
     "Division By Zero",
@@ -45,7 +45,7 @@ static const char* exception_msg[] = {
 static idt_entry_t idt[256];
 static isr_t interrupt_handlers[256];
 
-void set_idt_gate(uchar num, uint base, ushort sel, uchar flags) {
+void set_idt_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags) {
     idt[num].base_lo = base & 0xFFFF;
     idt[num].base_hi = (base >> 16) & 0xFFFF;
 
@@ -65,59 +65,59 @@ void init_idt(void) {
     // Note: Interrupt gates clear the IF bit in EFLAGS, while trap gates do
     // not. 0x8E = 1 00 0 0110 (386 Interrupt Gate) 0x8F = 1 00 0 1111 (386 Trap
     // Gate)
-    set_idt_gate(0, (uint)isr0, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(1, (uint)isr1, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(2, (uint)isr2, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(3, (uint)isr3, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(4, (uint)isr4, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(5, (uint)isr5, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(6, (uint)isr6, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(7, (uint)isr7, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(8, (uint)isr8, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(9, (uint)isr9, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(10, (uint)isr10, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(11, (uint)isr11, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(12, (uint)isr12, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(13, (uint)isr13, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(14, (uint)isr14, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(15, (uint)isr15, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(16, (uint)isr16, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(17, (uint)isr17, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(18, (uint)isr18, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(19, (uint)isr19, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(20, (uint)isr20, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(21, (uint)isr21, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(22, (uint)isr22, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(23, (uint)isr23, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(24, (uint)isr24, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(25, (uint)isr25, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(26, (uint)isr26, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(27, (uint)isr27, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(28, (uint)isr28, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(29, (uint)isr29, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(30, (uint)isr30, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(31, (uint)isr31, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(0, (uint32_t)isr0, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(1, (uint32_t)isr1, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(2, (uint32_t)isr2, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(3, (uint32_t)isr3, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(4, (uint32_t)isr4, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(5, (uint32_t)isr5, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(6, (uint32_t)isr6, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(7, (uint32_t)isr7, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(8, (uint32_t)isr8, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(9, (uint32_t)isr9, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(10, (uint32_t)isr10, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(11, (uint32_t)isr11, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(12, (uint32_t)isr12, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(13, (uint32_t)isr13, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(14, (uint32_t)isr14, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(15, (uint32_t)isr15, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(16, (uint32_t)isr16, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(17, (uint32_t)isr17, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(18, (uint32_t)isr18, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(19, (uint32_t)isr19, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(20, (uint32_t)isr20, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(21, (uint32_t)isr21, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(22, (uint32_t)isr22, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(23, (uint32_t)isr23, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(24, (uint32_t)isr24, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(25, (uint32_t)isr25, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(26, (uint32_t)isr26, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(27, (uint32_t)isr27, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(28, (uint32_t)isr28, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(29, (uint32_t)isr29, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(30, (uint32_t)isr30, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(31, (uint32_t)isr31, SEG_KCODE << 3, 0x8E);
 
-    set_idt_gate(IRQ0, (uint)irq0, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ1, (uint)irq1, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ2, (uint)irq2, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ3, (uint)irq3, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ4, (uint)irq4, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ5, (uint)irq5, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ6, (uint)irq6, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ7, (uint)irq7, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ8, (uint)irq8, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ9, (uint)irq9, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ10, (uint)irq10, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ11, (uint)irq11, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ12, (uint)irq12, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ13, (uint)irq13, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ14, (uint)irq14, SEG_KCODE << 3, 0x8E);
-    set_idt_gate(IRQ15, (uint)irq15, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ0, (uint32_t)irq0, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ1, (uint32_t)irq1, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ2, (uint32_t)irq2, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ3, (uint32_t)irq3, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ4, (uint32_t)irq4, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ5, (uint32_t)irq5, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ6, (uint32_t)irq6, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ7, (uint32_t)irq7, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ8, (uint32_t)irq8, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ9, (uint32_t)irq9, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ10, (uint32_t)irq10, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ11, (uint32_t)irq11, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ12, (uint32_t)irq12, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ13, (uint32_t)irq13, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ14, (uint32_t)irq14, SEG_KCODE << 3, 0x8E);
+    set_idt_gate(IRQ15, (uint32_t)irq15, SEG_KCODE << 3, 0x8E);
 
     // 0xEE = 1 11 0 0110 (386 Interrupt Gate DPL=3)
     // Flags are set so that interrupt gate is set to DPL = 3
-    set_idt_gate(ISR_SYSCALL, (uint)isr64, SEG_KCODE << 3, 0x8E | 0x60);
+    set_idt_gate(ISR_SYSCALL, (uint32_t)isr64, SEG_KCODE << 3, 0x8E | 0x60);
 
     lidt(idt, sizeof(idt));
 
@@ -125,14 +125,14 @@ void init_idt(void) {
     memset(&interrupt_handlers, 0, sizeof(isr_t) * 256);
 }
 
-void register_interrupt_handler(uchar n, isr_t handler) {
+void register_interrupt_handler(uint8_t n, isr_t handler) {
     interrupt_handlers[n] = handler;
     if (n >= IRQ0 && n <= IRQ15) {
         pic_enable_irq(n);
     }
 }
 
-void unregister_interrupt_handler(uchar n) {
+void unregister_interrupt_handler(uint8_t n) {
     interrupt_handlers[n] = NULL;
     if (n >= IRQ0 && n <= IRQ15) {
         pic_disable_irq(n);

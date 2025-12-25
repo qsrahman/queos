@@ -1,6 +1,6 @@
-#include <x86.h>
 #include <console.h>
 #include <uart.h>
+#include <x86.h>
 
 #define COM1 0x3f8
 

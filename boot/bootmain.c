@@ -7,23 +7,23 @@
 
 #define SECTSIZE 512
 
-void readseg(uchar*, uint, uint);
+void readseg(uint8_t*, uint32_t, uint32_t);
 
 void bootmain(void) {
     elfhdr_t* elf = (elfhdr_t*)0x10000;  // scratch space
 
     // Read 1st page off disk
-    readseg((uchar*)elf, 4096, 0);
+    readseg((uint8_t*)elf, 4096, 0);
 
     // Is this an ELF executable?
     if (elf->magic != ELF_MAGIC)
         return;  // let bootasm.S handle error
 
     // Load each program segment (ignores ph flags).
-    proghdr_t* ph = (proghdr_t*)((uchar*)elf + elf->phoff);
+    proghdr_t* ph = (proghdr_t*)((uint8_t*)elf + elf->phoff);
     proghdr_t* eph = ph + elf->phnum;
     for (; ph < eph; ph++) {
-        uchar* pa = (uchar*)ph->paddr;
+        uint8_t* pa = (uint8_t*)ph->paddr;
         readseg(pa, ph->filesz, ph->off);
         if (ph->memsz > ph->filesz)
             stosb(pa + ph->filesz, 0, ph->memsz - ph->filesz);
@@ -38,12 +38,11 @@ void bootmain(void) {
 
 void waitdisk(void) {
     // Wait for disk ready.
-    while ((inb(0x1F7) & 0xC0) != 0x40)
-        ;
+    while ((inb(0x1F7) & 0xC0) != 0x40);
 }
 
 // Read a single sector at offset into dst.
-void readsect(void* dst, uint offset) {
+void readsect(void* dst, uint32_t offset) {
     // Issue command.
     waitdisk();
     outb(0x1F2, 1);  // count = 1
@@ -60,8 +59,8 @@ void readsect(void* dst, uint offset) {
 
 // Read 'count' bytes at 'offset' from kernel into physical address 'pa'.
 // Might copy more than asked.
-void readseg(uchar* pa, uint count, uint offset) {
-    uchar* epa = pa + count;
+void readseg(uint8_t* pa, uint32_t count, uint32_t offset) {
+    uint8_t* epa = pa + count;
 
     // Round down to sector boundary.
     pa -= offset % SECTSIZE;

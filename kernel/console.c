@@ -1,21 +1,21 @@
-#include <x86.h>
 #include <console.h>
-#include <uart.h>
 #include <string.h>
+#include <uart.h>
+#include <x86.h>
 
 #define INPUT_BUF 128
 #define BACKSPACE 0x100
 #define CRTPORT 0x3D4
 
 #define C(x) ((x) - '@')  // Control-x
-static ushort* crt = 0;
-static ushort attrib = 0x0F;  // black on white
+static uint16_t* crt = 0;
+static uint16_t attrib = 0x0F;  // black on white
 
 struct {
     char buf[INPUT_BUF];
-    uint r;  // Read index
-    uint w;  // Write index
-    uint e;  // Edit index
+    uint32_t r;  // Read index
+    uint32_t w;  // Write index
+    uint32_t e;  // Edit index
 } input;
 
 static void cga_putc(int c) {
@@ -61,7 +61,7 @@ void cga_cls(void) {
 }
 
 // Sets the forecolor and backcolor that we will use
-void cga_set_color(uchar fg, uchar bg) {
+void cga_set_color(uint8_t fg, uint8_t bg) {
     // top 4 bits are the background color,
     // bottom 4 bits are the foreground color
     attrib = (bg << 4) | (fg & 0x0F);
@@ -131,6 +131,6 @@ void console_isr(int (*getc)(void)) {
 }
 
 void init_console(void) {
-    crt = (ushort*)0xB8000;  // CGA memory
+    crt = (uint16_t*)0xB8000;  // CGA memory
     cga_cls();
 }

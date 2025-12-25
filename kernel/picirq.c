@@ -1,8 +1,8 @@
 // Intel 8259A programmable interrupt controllers.
 
-#include <x86.h>
 #include <idt.h>
 #include <picirq.h>
+#include <x86.h>
 
 // I/O Addresses of the two programmable interrupt controllers
 #define IO_PIC1 0x20  // Master (IRQs 0-7)
@@ -16,9 +16,9 @@
 
 // Current IRQ mask.
 // Initial IRQ mask has interrupt 2 enabled (for slave 8259A).
-static ushort irqmask = 0xFFFF & ~(1 << IRQ_SLAVE);
+static uint16_t irqmask = 0xFFFF & ~(1 << IRQ_SLAVE);
 
-static void pic_set_mask(ushort mask) {
+static void pic_set_mask(uint16_t mask) {
     irqmask = mask;
     outb(IO_PIC1 + 1, mask);
     outb(IO_PIC2 + 1, mask >> 8);
@@ -32,7 +32,7 @@ void pic_disable_irq(int irq) {
     pic_set_mask(irqmask | (1 << (irq - IRQ0)));
 }
 
-static ushort pic_get_irq_reg(int ocw3) {
+static uint16_t pic_get_irq_reg(int ocw3) {
     // OCW3 to PIC CMD to get the register values.  PIC2 is chained, and
     // represents IRQs 8-15.  PIC1 is IRQs 0-7, with 2 being the chain
     outb(IO_PIC1, ocw3);
@@ -41,12 +41,12 @@ static ushort pic_get_irq_reg(int ocw3) {
 }
 
 // Returns the combined value of the cascaded PICs irq request register
-ushort pic_get_irr(void) {
+uint16_t pic_get_irr(void) {
     return pic_get_irq_reg(READ_IRR);
 }
 
 // Returns the combined value of the cascaded PICs in-service register
-ushort pic_get_isr(void) {
+uint16_t pic_get_isr(void) {
     return pic_get_irq_reg(READ_ISR);
 }
 

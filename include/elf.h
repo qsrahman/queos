@@ -1,39 +1,8 @@
 #pragma once
 
-#include <types.h>
+#include <stdint.h>
 
 #define ELF_MAGIC 0x464C457FU  // "\x7FELF" in little endian
-
-// File header
-typedef struct elfhdr {
-    uint magic;  // must equal ELF_MAGIC
-    uchar elf[12];
-    ushort type;
-    ushort machine;
-    uint version;
-    uint entry;
-    uint phoff;
-    uint shoff;
-    uint flags;
-    ushort ehsize;
-    ushort phentsize;
-    ushort phnum;
-    ushort shentsize;
-    ushort shnum;
-    ushort shstrndx;
-} elfhdr_t;
-
-// Program section header
-typedef struct proghdr {
-    uint type;
-    uint off;
-    uint vaddr;
-    uint paddr;
-    uint filesz;
-    uint memsz;
-    uint flags;
-    uint align;
-} proghdr_t;
 
 // Values for Proghdr type
 #define ELF_PROG_LOAD 1
@@ -42,3 +11,34 @@ typedef struct proghdr {
 #define ELF_PROG_FLAG_EXEC 1
 #define ELF_PROG_FLAG_WRITE 2
 #define ELF_PROG_FLAG_READ 4
+
+// File header
+typedef struct elfhdr {
+    uint32_t magic;  // must equal ELF_MAGIC
+    uint8_t elf[12];
+    uint16_t type;
+    uint16_t machine;
+    uint32_t version;
+    uint32_t entry;
+    uint32_t phoff;
+    uint32_t shoff;
+    uint32_t flags;
+    uint16_t ehsize;
+    uint16_t phentsize;
+    uint16_t phnum;
+    uint16_t shentsize;
+    uint16_t shnum;
+    uint16_t shstrndx;
+} elfhdr_t;
+
+// Program section header
+typedef struct proghdr {
+    uint32_t type;
+    uint32_t off;
+    uint32_t vaddr;
+    uint32_t paddr;
+    uint32_t filesz;
+    uint32_t memsz;
+    uint32_t flags;
+    uint32_t align;
+} proghdr_t;

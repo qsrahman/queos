@@ -1,5 +1,3 @@
 -I./include
 -I/opt/homebrew/gcc/i686-elf/15.2.0/include
 --target=i686-elf
--ffreestanding
--nostdlib
