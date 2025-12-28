@@ -65,8 +65,8 @@ void set_idt_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags);
 // For IRQs, to ease confusion, use the #defines above as the
 // first parameter.
 typedef void (*isr_t)(registers_t*);
-void register_interrupt_handler(uint8_t n, isr_t handler);
-void unregister_interrupt_handler(uint8_t n);
+void register_isr_handler(uint8_t n, isr_t handler);
+void unregister_isr_handler(uint8_t n);
 
 // These directives let us access the addresses of our ASM ISR handlers.
 void isr0(void);

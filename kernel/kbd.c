@@ -1,7 +1,7 @@
-#include <console.h>
+#include <x86.h>
 #include <kbd.h>
 #include <stddef.h>
-#include <x86.h>
+#include <console.h>
 
 // C('A') == Control-A
 #define C(x) (x - '@')
@@ -124,7 +124,7 @@ void kbd_isr(registers_t* regs) {
 }
 
 void init_kbd(void) {
-    register_interrupt_handler(IRQ1, kbd_isr);
+    register_isr_handler(IRQ1, kbd_isr);
 }
 
 int getchar(void) {

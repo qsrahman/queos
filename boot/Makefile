@@ -7,7 +7,7 @@ ASMFLAGS += -felf32
 all: $(BUILD_DIR)/bootsec.elf
 
 $(BUILD_DIR)/bootsec.elf: $(BUILD_DIR)/boot/asm/bootsec.o $(BUILD_DIR)/boot/c/bootmain.o
-	@$(LD) $(LDFLAGS) -N -e _start -Ttext 0x7C00 -o $@ $^
+	@$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00 -o $@ $^
 	@$(OBJCOPY) -S -O binary -j .text $@ $(BUILD_DIR)/bootsec.bin > /dev/null 2>&1
 	@./sign.pl $(BUILD_DIR)/bootsec.bin
 

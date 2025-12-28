@@ -1,8 +1,8 @@
-#include <console.h>
 #include <gdt.h>
 #include <idt.h>
 #include <picirq.h>
 #include <string.h>
+#include <console.h>
 
 static const char* exception_msg[] = {
     "Division By Zero",
@@ -43,7 +43,7 @@ static const char* exception_msg[] = {
 };
 
 static idt_entry_t idt[256];
-static isr_t interrupt_handlers[256];
+static isr_t isr_handlers[256];
 
 void set_idt_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags) {
     idt[num].base_lo = base & 0xFFFF;
@@ -122,18 +122,18 @@ void init_idt(void) {
     lidt(idt, sizeof(idt));
 
     // Nullify all the interrupt handlers.
-    memset(&interrupt_handlers, 0, sizeof(isr_t) * 256);
+    memset(&isr_handlers, 0, sizeof(isr_t) * 256);
 }
 
-void register_interrupt_handler(uint8_t n, isr_t handler) {
-    interrupt_handlers[n] = handler;
+void register_isr_handler(uint8_t n, isr_t handler) {
+    isr_handlers[n] = handler;
     if (n >= IRQ0 && n <= IRQ15) {
         pic_enable_irq(n);
     }
 }
 
-void unregister_interrupt_handler(uint8_t n) {
-    interrupt_handlers[n] = NULL;
+void unregister_isr_handler(uint8_t n) {
+    isr_handlers[n] = NULL;
     if (n >= IRQ0 && n <= IRQ15) {
         pic_disable_irq(n);
     }
@@ -145,7 +145,7 @@ void syscall_handler(registers_t* regs) {
 }
 
 void isr_handler(registers_t* regs) {
-    isr_t handler = interrupt_handlers[regs->int_no];
+    isr_t handler = isr_handlers[regs->int_no];
 
     if (handler) {
         if (regs->int_no == ISR_SYSCALL) {
@@ -165,7 +165,7 @@ void irq_handler(registers_t* regs) {
     // Send an EOI (end of interrupt) signal to the PICs.
     pic_eoi(regs->int_no);
 
-    isr_t handler = interrupt_handlers[regs->int_no];
+    isr_t handler = isr_handlers[regs->int_no];
 
     if (handler) {
         handler(regs);

@@ -5,11 +5,12 @@
 #define NSEGS 6
 
 // various segment selectors.
-#define SEG_KCODE 1  // kernel code
-#define SEG_KDATA 2  // kernel data+stack
-#define SEG_UCODE 3  // user code
-#define SEG_UDATA 4  // user data+stack
-#define SEG_TSS 5    // this process's task state
+#define SEG_NULL 0   // NULL segment
+#define SEG_KCODE 1  // kernel code segment
+#define SEG_KDATA 2  // kernel data+stack segment
+#define SEG_UCODE 3  // user code segment
+#define SEG_UDATA 4  // user data+stack segment
+#define SEG_TSS 5    // this process's task state segment
 
 // This structure contains the value of one GDT entry.
 // We use the attribute 'packed' to tell GCC not to change

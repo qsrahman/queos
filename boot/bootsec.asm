@@ -8,8 +8,8 @@ bits 16
 CODE_SEG    equ    gdt_code - gdt_start
 DATA_SEG    equ    gdt_data - gdt_start
 
-global _start
-_start:
+global start
+start:
     cli                 ; Disable BIOS enabled interrupts
     ; Zero data segment registers DS, ES, and SS.
     xor ax, ax
@@ -38,13 +38,13 @@ seta20_2:
     ; Switch from real to protected mode. Use a bootstrap GDT that makes
     ; virtual addresses map directly to physical addresses so that the
     ; effective memory map doesn't change during the transition.
-    lgdt[gdt_desc]
+    lgdt [gdt_desc]
     mov eax, cr0
     or eax, 0x01
     mov cr0, eax
 
     ; Complete the transition to 32-bit protected mode by using a long jmp
-    ; to reload %cs and %eip.  The segment descriptors are set up with no
+    ; to reload cs and eip.  The segment descriptors are set up with no
     ; translation, so that the mapping is still the identity mapping.
     jmp CODE_SEG:start32
 
@@ -60,7 +60,7 @@ start32:
     mov gs, ax
 
     ; Set up the stack pointer and call into C.
-    mov esp, _start
+    mov esp, start
 
     extern bootmain
     call bootmain

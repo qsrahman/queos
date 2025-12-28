@@ -1,6 +1,6 @@
-#include <console.h>
-#include <uart.h>
 #include <x86.h>
+#include <uart.h>
+#include <console.h>
 
 #define COM1 0x3f8
 
@@ -27,10 +27,10 @@ void init_uart(void) {
     inb(COM1 + 2);
     inb(COM1 + 0);
 
-    register_interrupt_handler(IRQ4, uart_isr);
+    register_isr_handler(IRQ4, uart_isr);
 
     // Announce that we're here.
-    for (char* p = "QOS...\n"; *p; p++) {
+    for (char* p = "QUEOS...\n"; *p; p++) {
         uart_putc(*p);
     }
 }
