@@ -105,13 +105,13 @@ The BIOS will look for the boot loader in the very first sector (512 bytes) of
 whatever mass storage device you told it to boot from, which we'll call the boot
 disk. The processor will execute the instructions it finds there. This means you
 have to make a choice: either your boot loader has to be less than 512 bytes or
-you can split it up into smaller parts and have each part load the next one. xv6
-takes the first approach.
+you can split it up into smaller parts and have each part load the next one.
+queos takes the first approach.
 
 The BIOS loads the boot loader into memory at address 0x7C00, then sets the
-processor's `%ip` register to that address and jumps to it. Remember that `%eip`
-is the instruction pointer on x86? Okay cool. But why did I write `%ip` instead
-of `%eip`? Well, the BIOS assumes we're gonna be using 16 bits because of the
+processor's `ip` register to that address and jumps to it. Remember that `eip`
+is the instruction pointer on x86? Okay cool. But why did I write `ip` instead
+of `eip`? Well, the BIOS assumes we're gonna be using 16 bits because of the
 hellscape known as backwards-compatibility, so we've gotta pretend like it's
 1975 before we can pretend it's 1995. The irony here is that this initial 16-bit
 mode is called "real mode". So on top of loading the OS, the boot loader will
@@ -125,7 +125,7 @@ makes it easier to make sure that the entire boot loader will fit in the first
 the same boot disk together, and the user-space programs will be on a separate
 disk that holds the file system.
 
-## bootasm.S
+## bootsec.asm
 
 Boot loader space is tight, and we want to make sure our instructions are exact,
 so we're gonna start off in assembly. The ".asm" file extension means it's gonna
@@ -233,18 +233,18 @@ Okay, so the GDT entry will give us the first 20 bits of the new linear address;
 the offset bits stay the same. After that, the linear address is ready to be
 converted to a physical address by the paging hardware. We'll go over this
 second half of the story in the virtual memory section. For now, the point is
-this: xv6 is mostly gonna say no thank you to segmentation and stick to paging
+this: queos is mostly gonna say no thank you to segmentation and stick to paging
 alone for memory virtualization.
 
 So we're gonna set up our GDT to map all segments the exact same way: with a
 base of zero and the maximum possible limit (with 32 bits, that works out to a
 grand total of 4 GB, wow so much RAM, I can't imagine ever needing more). We
 have to stick this GDT somewhere in our code so we can point the CPU to it, so
-we'll put it at the end and throw a `gdtdesc` label on it. Now we can tell the
+we'll put it at the end and throw a `gdt_desc` label on it. Now we can tell the
 CPU to load it up with a special x86 instruction for that.
 
 ```asm
-    lgdt [gdtdesc]
+    lgdt [gdt_desc]
 ```
 
 ### Protected Mode
@@ -253,8 +253,7 @@ Good news, everyone! We're finally ready to turn on protected mode, which we do
 by setting the zero bit of the `cr0` control register. Note that the `l` at the
 end of the instructions here means we're now using long words, i.e. 32 bits;
 `CR0_PE` is defined in the
-[mmu.h](https://github.com/mit-pdos/xv6-public/blob/master/mmu.h) header file as
-0x1.
+[mmu.h](https://github.com/qsrahmans/queos/blob/main/mmu.h) header file as 0x1.
 
 ```asm
     mov eax, cr0      ; Copy cr0 into eax
@@ -269,9 +268,8 @@ settings. We can do that by using a long jump instruction, which lets us specify
 a code segment selector. We're just gonna jump to the very next line anyway, but
 in doing so we'll force the CPU to start using the GDT, which describes a 32-bit
 code segment, so _now_ we're finally in 32-bit mode! Here, `CODE_SEG` is a
-constant defined in
-[mmu.h](https://github.com/mit-pdos/xv6-public/blob/master/mmu.h) as segment 1,
-for `cs`; we bitshift it left by 3.
+constant defined in [mmu.h](https://github.com/qsrahmans/queos/blob/main/mmu.h)
+as segment 1, for `cs`; we bitshift it left by 3.
 
 ```asm
     jmp CODE_SEG:start32
@@ -280,9 +278,9 @@ for `cs`; we bitshift it left by 3.
 First we signal the compiler to start generating 32-bit code. Then we initialize
 the data, extra, and stack segment registers to point to the `DATA_SEG` entry of
 the GDT; that constant is defined in
-[mmu.h](https://github.com/mit-pdos/xv6-public/blob/master/mmu.h) as the segment
-for the kernel data and stack. We're not required to set up `fs` and `gs`, so
-we'll just zero them.
+[mmu.h](https://github.com/qsrahmans/queos/blob/main/mmu.h) as the segment for
+the kernel data and stack. We're not required to set up `fs` and `gs`, so we'll
+just zero them.
 
 ```asm
 bits 32    # Tell assembler to generate 32-bit code now
@@ -310,10 +308,10 @@ stack (most-recently-pushed byte).
 But where should we put the stack? The memory from 0xA_0000 to 0x10_0000 is
 littered with a memory regions that I/O devices are gonna be checking, so that's
 out. The boot loader starts at 0x7C00 and takes up 512 bytes, so that means it
-ends at 0x7E00. So xv6 is gonna start the stack at 0x7C00 and have it grow down
-from there, toward 0x0000 and away from the boot loader. Remember how back in
-the beginning, we started off the assembly code with a `start` label? That means
-that `start` is conveniently located at 0x7C00.
+ends at 0x7E00. So queos is gonna start the stack at 0x7C00 and have it grow
+down from there, toward 0x0000 and away from the boot loader. Remember how back
+in the beginning, we started off the assembly code with a `start` label? That
+means that `start` is conveniently located at 0x7C00.
 
 ```asm
     mov    esp, start
@@ -323,7 +321,7 @@ And we're done with assembly! Time to move on to C code for the rest of the boot
 loader. We'll take over with a C function called `bootmain()`, which should
 never return. The linker will take care of connecting the call here to its
 definition in
-[bootmain.c](https://github.com/mit-pdos/xv6-public/blob/master/bootmain.c).
+[bootmain.c](https://github.com/qsrahmans/queos/blob/main/bootmain.c).
 
 ```asm
     extern bootmain
@@ -341,13 +339,13 @@ on port 0x8A00, so we can transfer control back to it there; this wouldn't do
 anything on real hardware.
 
 ```asm
-    movw    $0x8a00, %ax    # 0x8a00 -> port 0x8a00
-    movw    %ax, %dx
-    outw    %ax, %dx
-    movw    $0x8ae0, %ax    # 0x8ae0 -> port 0x8a00
-    outw    %ax, %dx
+    mov    ax, 0x8a00    ; 0x8a00 -> port 0x8a00
+    mov    dx, ax
+    out    dx, ax
+    mov    ax, 0x8ae0    ; 0x8ae0 -> port 0x8a00
+    out    dx, ax
 spin:
-    jmp     spin            # loop forever
+    jmp     spin         ; loop forever
 ```
 
 ### The Global Descriptor Table
@@ -358,11 +356,9 @@ deliver on that promise now by defining the GDT here.
 
 x86 expects that the GDT will be aligned on a 32-bit boundary, so we tell the
 assembler to do that. Then we create three segments: a null segment, a segment
-for executable code, and another for writeable data. The null segment has all
-zeroes; the first argument to `SEG_ASM` has the permission bits, the second is
-the physical base address, and the third is the maximum virtual address. As we
-said before, queos relies mostly on paging, so we set the segments to go from 0
-to 4 GB so they identity-map all the memory.
+for executable code, and another for writeable data. As we said before, queos
+relies mostly on paging, so we set the segments to go from 0 to 4 GB so they
+identity-map all the memory.
 
 ```asm
 align 4 	; force 4-byte alignment
@@ -406,15 +402,14 @@ memory. Let's start off by looking at `waitdisk()`.
 ### waitdisk
 
 ```c
-void waitdisk(void)
-{
+void waitdisk(void) {
     while ((inb(0x1F7) & 0xC0) != 0x40)
         ;
 }
 ```
 
 HEAD. DESK. Why all the magic numbers? At least we're lucky that the name makes
-it obvious what this function does; this won't always be true in xv6. Okay, so
+it obvious what this function does; this won't always be true in queos. Okay, so
 this function does only one thing: it loops until the disk is ready. Disk specs
 are boring as all hell, so feel free to skip to the next section if you don't
 care about the particulars (I don't blame you).
@@ -444,9 +439,9 @@ seventh bit (i.e., 0x80) is the BSY bit, which if set says the disk is busy.
 Since interrupts are disabled, we'll have to manually poll the status port in an
 infinite loop until the BSY bit is not set but the RDY bit is: `inb()` is a C
 wrapper (defined in
-[x86.h](https://github.com/mit-pdos/xv6-public/blob/master/bootmain.c)) for the
-x86 assembly instruction `inb`, which reads from a port. We don't care about any
-of the other status flags, so we'll get rid of them by bitwise-ANDing the result
+[x86.h](https://github.com/qsrahmans/queos/blob/main/bootmain.c)) for the x86
+assembly instruction `inb`, which reads from a port. We don't care about any of
+the other status flags, so we'll get rid of them by bitwise-ANDing the result
 with 0xC0 = 0x40 + 0x80. If the result of that is 0x40, then only the RDY bit is
 set and we're good to go.
 
@@ -455,8 +450,7 @@ Phew. That was a lot for just one line of code.
 ### readsect
 
 ```c
-void readsect(void *dst, uint offset)
-{
+void readsect(void *dst, uint32_t offset) {
     // Issue command
     waitdisk();
     outb(0x1F2, 1);
@@ -473,7 +467,7 @@ void readsect(void *dst, uint offset)
 ```
 
 If you skipped the last section: this function reads a sector (which in the
-current-year-according-to-xv6 of 1995 is 512 bytes) from disk. Good to see you
+current-year-according-to-queos of 1995 is 512 bytes) from disk. Good to see you
 again, on to the next section for you!
 
 If you powered through the pain and read about ATA PIO mode above, some of the
@@ -481,16 +475,13 @@ magic numbers here might be familiar. First we call `waitdisk()` to wait for the
 RDY bit, then we send some stuff over ports 0x1F2 through 0x1F7, which we know
 are the command registers for the primary ATA bus.
 
-Note that `uint` is just a type alias for C's `unsigned int`, defined in the
-header file
-[types.h](https://github.com/mit-pdos/xv6-public/blob/master/bootmain.c). The
-`offset` argument is in bytes, and determines which sector we're gonna read;
-sector 0 has to hold the boot loader so the BIOS can find it, and in xv6 the
+The `offset` argument is in bytes, and determines which sector we're gonna read;
+sector 0 has to hold the boot loader so the BIOS can find it, and in queos the
 kernel will start on disk at sector 1.
 
 `outb()` is another C wrapper for an x86 instruction from
-[x86.h](https://github.com/mit-pdos/xv6-public/blob/master/x86.h); this one's
-the opposite of `inb()` because it sends data out to a port. The disk controller
+[x86.h](https://github.com/qsrahmans/queos/blob/main/x86.h); this one's the
+opposite of `inb()` because it sends data out to a port. The disk controller
 register at port 0x1F2 determines how many sectors we're gonna read. Ports 0x1F3
 through 0x1F6 are where the sector's address goes. If you _really_ must know
 (why?) they're the sector number register, the cylinder low and high registers,
@@ -506,9 +497,8 @@ The `l` at the end means it reads one long-word (32 bits) at a time.
 ### readseg
 
 ```c
-void readseg(uchar *pa, uint count, uint offset)
-{
-    uchar *epa = pa + count;
+void readseg(uint8_t *pa, uint32_t count, uint32_t offset) {
+    uint8_t *epa = pa + count;
 
     // Round down to sector boundary
     pa -= offset % SECTSIZE;
@@ -527,22 +517,20 @@ void readseg(uchar *pa, uint count, uint offset)
 
 Okay, finally, we're done with assembly and disk specs. We're gonna read `count`
 bytes starting from `offset` into physical address `pa`. Note that `uchar` is
-another type alias for `unsigned char` from
-[types.h](https://github.com/mit-pdos/xv6-public/blob/master/types.h); this
-means that `pa` is a pointer (which is 32 bits in x86) to some data where each
-piece is 1 byte.
+another type alias for `unsigned char`; this means that `pa` is a pointer (which
+is 32 bits in x86) to some data where each piece is 1 byte.
 
 `epa` will point to the end of the part we want to read. Now, `count` might not
-be sector-aligned, so we fix that. Declaring `pa` as a `uchar *` lets us do this
-pointer arithmetic easily because we know that adding 1 to `pa` makes it point
-at the next byte; if it were a `void *` like in `readsect()`, pointer arithmetic
-would be undefined. (Actually, GCC lets you do it anyway, but GCC lets you get
-away with a lot of crazy stuff, so let's not go there.)
+be sector-aligned, so we fix that. Declaring `pa` as a `uint8_t *` lets us do
+this pointer arithmetic easily because we know that adding 1 to `pa` makes it
+point at the next byte; if it were a `void *` like in `readsect()`, pointer
+arithmetic would be undefined. (Actually, GCC lets you do it anyway, but GCC
+lets you get away with a lot of crazy stuff, so let's not go there.)
 
 Now that we've got everything set up, we just call `readsect()` in a for loop to
 read one sector at a time, and that's it!
 
-Some people have asked about the structure of some of the for loops in xv6,
+Some people have asked about the structure of some of the for loops in queos,
 because they don't always use obvious index variables like `int i`. There are
 plenty of reasons to hate C, but I think the way it structures for loops is by
 far one of its most powerful features:
@@ -605,8 +593,8 @@ need to have space in memory.
 The kernel (along with all the user-space programs) will be compiled and linked
 as ELF files, so `bootmain()` will have to parse the ELF header to find the
 program header table, then parse that to load each section into memory at the
-right address. xv6 uses a `struct elfhdr` and a `struct proghdr`, both defined
-in [elf.h](https://github.com/mit-pdos/xv6-public/blob/master/elf.h), for this
+right address. queos uses a `struct elfhdr` and a `struct proghdr`, both defined
+in [elf.h](https://github.com/qsrahmans/queos/blob/main/elf.h), for this
 purpose.
 
 Okay, back to the boot loader to finish up now!
@@ -626,10 +614,9 @@ into sector 1. Remember that we have to convert `elf` into a `uchar *` so that
 the pointer arithmetic in `readseg()` works out the way we want it to.
 
 ```c
-void bootmain(void)
-{
+void bootmain(void) {
     struct elfhdr *elf = (struct elfhdr *) 0x10000;
-    readseg((uchar *) elf, 4096, 0);
+    readseg((uint8_t *) elf, 4096, 0);
     // ...
 }
 ```
@@ -639,11 +626,10 @@ is an ELF file and not some random other garbage because any of a million things
 went wrong during the compilation process, or we got some rootkit that totally
 corrupted the kernel or something. It's not really the most robust of checks,
 but _eh_. If something went wrong we'll just return, since we know that the code
-in `bootasm.S` is ready to handle that with some Bochs breakpoints.
+in `bootsec.asm` is ready to handle that with some Bochs breakpoints.
 
 ```c
-void bootmain(void)
-{
+void bootmain(void) {
     // ...
     if (elf->magic != ELF_MAGIC) {
         return;
@@ -658,10 +644,9 @@ table's offset from the start of the ELF header, so we'll set `ph` to point to
 that and `eph` to point to the end of the table.
 
 ```c
-void bootmain(void)
-{
+void bootmain(void) {
     // ...
-    struct proghdr *ph = (struct proghdr *) ((uchar *) elf + elf->phoff);
+    struct proghdr *ph = (struct proghdr *) ((uint8_t *) elf + elf->phoff);
     struct proghdr *eph = ph + elf->phnum;
     // ...
 }
@@ -674,11 +659,10 @@ this for loop, note that `ph` is a `struct proghdr *`, so incrementing it with
 makes it automatically point at the next entry in the table.
 
 ```c
-void bootmain(void)
-{
+void bootmain(void) {
     // ...
     for (; ph < eph; ph++) {
-        uchar *pa = (uchar *) ph->paddr;    // address to load section into
+        uint8_t *pa = (uint8_t *) ph->paddr;    // address to load section into
         readseg(pa, ph->filesz, ph->off);   // read section from disk
 
         // Check if the segment's size in memory is larger than the file image
@@ -693,7 +677,7 @@ void bootmain(void)
 That if statement at the end checks if the section's size in memory should be
 larger than its size in the file, in which case it calls `stosb()`, which is yet
 another C wrapper from
-[x86.h](https://github.com/mit-pdos/xv6-public/blob/master/x86.h) for the x86
+[x86.h](https://github.com/qsrahmans/queos/blob/main/x86.h) for the x86
 instruction `rep stosb`, which block loads bytes into a string. It's used here
 to zero the rest of the memory space for that section. Okay, but why would we
 want to do that? Well, if the reason it's larger is because it has some
@@ -711,27 +695,27 @@ would throw a huge error.
 Luckily, the ELF header tells us where to find the entry point in memory, so we
 could get a pointer to that address. That means... function pointers! If you've
 never used function pointers in C before, then this won't be the last time
-you'll see them in xv6, so check it out.
+you'll see them in queos, so check it out.
 
 A C function is just a bunch of code to be executed in order, right? That means
 it shows up in the ELF file's `text` section, which will end up in memory. When
 you call a regular old C function, the compiler just adds some extra assembly
 instructions to throw a return address on the stack and update the registers
-`%ebp` and `%esp` to point to the new function's stack on top of the old one. If
+`ebp` and `esp` to point to the new function's stack on top of the old one. If
 the function getting called has any arguments or local variables, they'll get
-pushed onto the stack too. Then the instruction register `%eip` gets updated to
+pushed onto the stack too. Then the instruction register `eip` gets updated to
 point to the new function section, and that's it. After the compiler is done,
 the linker will replace the function's name with its memory address in the
 `text` section, and voila, a function call.
 
 The point of all this is that in C we can use pointers to functions; they just
 point to the beginning of that function's instructions in memory, where the
-`%eip` register would end up pointing if the function gets called. So in this
+`eip` register would end up pointing if the function gets called. So in this
 case, even though we're not linking with the kernel, we can still call into the
 entry point by getting its address from the ELF header, creating a function
 pointer to that address, then calling the function pointer. The compiler will
 still add all the usual stack magic, but instead of the linker determining where
-`%eip` should point, we'll do that ourselves.
+`eip` should point, we'll do that ourselves.
 
 The first line below declares `entry` as a pointer to a function with argument
 type `void` and return type `void`. Then we set `entry` to the address from the
@@ -741,8 +725,7 @@ Again, this shouldn't return, but if it does then it's the last part of this
 function, so this function will return back into the assembly boot loader code.
 
 ```c
-void bootmain(void)
-{
+void bootmain(void) {
     // ...
     void (*entry)(void);
     entry = (void(*) (void)) (elf->entry);
@@ -766,10 +749,10 @@ into its entry point.
 ELF headers will continue to haunt us in the kernel's linker script and when we
 load user programs from disk in `exec()`, and function pointers will make
 another appearance when we get around to handling interrupts. The good news: the
-boot loader is one of the most opaque parts of the xv6 code, full of boring
+boot loader is one of the most opaque parts of the queos code, full of boring
 hardware specs and backwards-compatibility requirements, so if you made it this
 far, it does get better!
 
 (But it also gets worse... looking at you,
-[mp.c](https://github.com/mit-pdos/xv6-public/blob/master/mp.c) and
-[kbd.c](https://github.com/mit-pdos/xv6-public/blob/master/kb.c)...)
+[mp.c](https://github.com/qsrahmans/queos/blob/main/mp.c) and
+[kbd.c](https://github.com/qsrahmans/queos/blob/main/kbd.c)...)
