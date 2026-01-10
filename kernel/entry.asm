@@ -8,8 +8,6 @@ MBOOT_CHECKSUM      equ -(MBOOT_HEADER_MAGIC + MBOOT_HEADER_FLAGS)
 
 section .text
 
-extern kmain                    ; This is the entry point of our C code
-
 align 4
 global mboot                    ; Make 'mboot' accessible from C.
 mboot:
@@ -17,7 +15,7 @@ mboot:
                                 ; 4-byte boundary in your kernel file
     dd MBOOT_HEADER_FLAGS       ; How GRUB should load your file / settings
     dd MBOOT_CHECKSUM           ; To ensure that the above values are correct
-    
+
 global _start                   ; Kernel entry point.
 _start:
     mov ebp, 0                  ; nuke the stack frame
@@ -26,6 +24,7 @@ _start:
     ; transfer multiboot information to kmain
     push ebx
 
+    extern kmain                ; This is the entry point of our C code
     call kmain                  ; call our main() function.
 
     cli

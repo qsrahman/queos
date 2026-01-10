@@ -1,6 +1,10 @@
 #include <gdt.h>
+#include <x86.h>
 
 static gdt_entry_t gdt[NSEGS];
+static tss_entry_t tss_entry;
+
+extern uint32_t kstack_top;  // in entry.asm
 
 void set_gdt_gate(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran) {
     gdt[num].base_low = (base & 0xFFFF);
@@ -28,6 +32,13 @@ void init_gdt(void) {
     // User mode (DPL=3) data segment 0xFA = 1 11 1 0010
     set_gdt_gate(SEG_UDATA, 0, 0xFFFFFFFF, 0xF2, 0xCF);
 
+    tss_entry.ss0 = SEG_KDATA;  // Set the kernel stack segment
+    uint32_t base = (uint32_t)&tss_entry;
+    uint32_t limit = base + sizeof(tss_entry);
+    set_gdt_gate(SEG_TSS, base, limit, 0xE9, 0x00);
+
     // load gdt
     lgdt(gdt, sizeof(gdt));
+    // load ltr
+    ltr(SEG_TSS << 3);
 }

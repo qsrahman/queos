@@ -9,20 +9,23 @@ SECTIONS {
     /* AT(...) gives the load address of this section, which tells
        the boot loader where to load the kernel in physical memory
     */
-    .text :  AT(0x100000) {
+    .text :  ALIGN(0x1000) {
         *(.text*)           /* all text sections from all files */
-        *(.rodata*)         /* all read-only data sections from all files */
     }
 
-    . = ALIGN(0x1000);
     _etext = .;
+    
+    .rodata : ALIGN(0x1000) {
+        *(.rodata*)         /* all read-only data sections from all files */ 
+    }
 
-    .data : {
+    .data : ALIGN(0x1000) {
         *(.data*)           /* all data sections from all files */
     }
 
     _edata = .;
-    .bss : {
+
+    .bss : ALIGN(0x1000) {
         *(COMMON)           /* all COMMON sections from all files */
         *(.bss*)            /* all bss sections from all files */
     }

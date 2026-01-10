@@ -9,7 +9,7 @@ export LD = $(PREFIX)gcc
 export OBJDUMP = $(PREFIX)objdump
 export OBJCOPY = $(PREFIX)objcopy
 
-export CFLAGS = -std=c11 -Wall -Wextra -DVERSION=\"$(VERSION)\"
+export CFLAGS = -std=gnu11 -Wall -Wextra -DVERSION=\"$(VERSION)\"
 export LDFLAGS =
 export ASMFLAGS =
 export LIBS =

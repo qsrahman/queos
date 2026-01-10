@@ -146,6 +146,8 @@ irq_common_stub:
 
     add esp, 4
 
+global task_ret
+task_ret:          ; void task_ret(void); 
     pop eax        ; reload the original data segment descriptor
     mov ds, ax
     mov es, ax
@@ -155,3 +157,41 @@ irq_common_stub:
     popa           ; Pops edi,esi,ebp...
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
+
+; Context switch
+;
+;   void switch_ctx(context_t **old, context_t *new);
+;
+; Save current register context in old context
+; and then load register context from new context.
+global switch_ctx
+switch_ctx:
+    mov eax, [esp + 4]      ; old context
+    mov edx, [esp + 8]      ; new context
+
+    ; If current task is trying to switch to itself then, that will
+    ; not work as, context would be pushed to its stack, but restored
+    ; from older stack pointer reference from second argument.
+    ; Ideally this should be handled in scheduler code itself, but
+    ; this is just to be on safer side.
+    cmp [eax], edx
+    je .exit
+
+    ; Save old callee-save registers
+    push ebp
+    push ebx
+    push esi
+    push edi
+
+    ; Switch stacks
+    mov [eax], esp
+    mov esp, edx
+
+    ; Load new callee-save registers
+    pop edi
+    pop esi
+    pop ebx
+    pop ebp
+.exit:
+    ret
+
