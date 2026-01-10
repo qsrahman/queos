@@ -83,7 +83,7 @@ char* strncat(char* s, const char* append, size_t n) {
     return s;
 }
 
-char* strchr(char* s, int c) {
+char* strchr(const char* s, int c) {
     int i;
 
     for (i = 0; s[i] != '\0'; i++) {
@@ -92,7 +92,7 @@ char* strchr(char* s, int c) {
     }
     if (s[i] == '\0')
         return NULL;
-    return s + i;
+    return (char*)(s + i);
 }
 
 int strcmp(const char* s1, const char* s2) {
@@ -136,7 +136,7 @@ int strncmp(const char* s1, const char* s2, size_t n) {
     return 0;
 }
 
-char* strrchr(char* s, int c) {
+char* strrchr(const char* s, int c) {
     int i, len;
 
     len = strlen(s);
@@ -148,10 +148,10 @@ char* strrchr(char* s, int c) {
             break;
     if (i < 0)
         return NULL;
-    return s + i;
+    return (char*)(s + i);
 }
 
-char* strstr(char* haystack, const char* needle) {
+char* strstr(const char* haystack, const char* needle) {
     int haystacklen, i, j, needlelen;
 
     haystacklen = strlen(haystack);
@@ -164,7 +164,7 @@ char* strstr(char* haystack, const char* needle) {
             if (needle[j] != haystack[i + j])
                 break;
         if (j == needlelen)
-            return haystack + i;
+            return (char*)(haystack + i);
     }
     return NULL;
 }

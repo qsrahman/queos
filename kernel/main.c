@@ -1,12 +1,12 @@
-#include <console.h>
+#include <x86.h>
 #include <gdt.h>
 #include <idt.h>
 #include <kbd.h>
-#include <monitor.h>
-#include <stddef.h>
-#include <timer.h>
 #include <uart.h>
-#include <x86.h>
+#include <timer.h>
+#include <stddef.h>
+#include <monitor.h>
+#include <console.h>
 
 void kmain(void) {
     init_gdt();

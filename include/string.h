@@ -13,9 +13,9 @@ char* strncat(char* s, const char* append, size_t n);
 size_t strlen(const char* s);
 size_t strnlen(const char* s, size_t maxlen);
 
-char* strstr(char* haystack, const char* needle);
-char* strchr(char* s, int c);
-char* strrchr(char* s, int c);
+char* strstr(const char* haystack, const char* needle);
+char* strchr(const char* s, int c);
+char* strrchr(const char* s, int c);
 
 int memcmp(const void* s1, const void* s2, size_t n);
 void* memset(void* dest, int val, size_t n);
