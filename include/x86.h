@@ -103,6 +103,12 @@ static inline void lcr3(uint32_t val) {
                          : "r"(val));
 }
 
+static inline uint32_t readeflags(void) {
+    uint32_t eflags;
+    __asm__ __volatile__("pushfl; popl %0" : "=r"(eflags));
+    return eflags;
+}
+
 static inline void
 cpuid(uint32_t info, uint32_t* eaxp, uint32_t* ebxp, uint32_t* ecxp, uint32_t* edxp) {
     uint32_t eax, ebx, ecx, edx;
